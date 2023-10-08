@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class BoatCollision : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class BoatCollision : MonoBehaviour
     [Tooltip("Indicates how much health (in seconds) the trash collected will restore")]
     private float _pickUpAmount;
 
+    [Tooltip("How fast will the boat go when bumping an obstacle")]
+    [SerializeField]
+    private float _bumpSpeed;
 
     //Stun time indica cuanto tiempo estas stuneado
     //Stun cooldown indica el tiempo de invulneravilidad al stun
@@ -20,13 +24,16 @@ public class BoatCollision : MonoBehaviour
     [Space]
     [Header("Set up")]
     [SerializeField]
-    private SpriteRenderer _renderer;
+    private SpriteRenderer _renderer, _trashBagRenderer;
+
+    [SerializeField]
+    private Animator _playerAnim;
 
     [SerializeField]
     private SpriteRenderer _shieldRenderer;
 
     [SerializeField]
-    private AudioSource _stunSFX, _pickUpSFX, _powerUpSFX;
+    private AudioSource _stunSFX, _pickUpSFX, _powerUpSFX, _brokenShieldSFX;
     
     private bool _canBeStunned = true;
     private bool _hasShield = false;
@@ -35,6 +42,9 @@ public class BoatCollision : MonoBehaviour
     private BoatHealth _health;
     private BoatPowerUps _powerUps;
     private BoatMovement _movement;
+    private int _trashCount;
+    [SerializeField]
+    private TextMeshProUGUI _trashCounterTMP;
 
     private void Awake()
     {
@@ -49,6 +59,9 @@ public class BoatCollision : MonoBehaviour
         {
             _pickUpSFX.Play();
             _health.CurrentHealth += Mathf.Clamp(_pickUpAmount, 0, _health._maxHealth);
+            _trashCount++;
+            _trashCounterTMP.text = _trashCount.ToString();
+            PlayerPrefs.SetInt("TrashCount", _trashCount);
             Destroy(collision.gameObject);
         }
         if (collision.CompareTag("Shield"))
@@ -64,6 +77,13 @@ public class BoatCollision : MonoBehaviour
             Destroy(collision.gameObject);
             _powerUps.EnableMagnet();
         }
+
+        if (collision.CompareTag("Speed"))
+        {
+            _powerUpSFX.Play();
+            Destroy(collision.gameObject);
+            _powerUps.EnableSuperSpeed();
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -76,6 +96,7 @@ public class BoatCollision : MonoBehaviour
 
     private IEnumerator Stun()
     {
+        _movement.Rb.velocity = -_movement.Rb.velocity.normalized * _bumpSpeed;
         if (_hasShield)
         {
             DisableShield();
@@ -83,11 +104,13 @@ public class BoatCollision : MonoBehaviour
         }
         if (!_canBeStunned) yield break;
         _stunSFX.Play();
-        _movement.enabled = false;
-        _renderer.color = Color.red;
+        _playerAnim.SetBool("Stun", true);
+        _trashBagRenderer.enabled = true;
+        _movement.InputActions.Disable();
         yield return new WaitForSeconds(_stunTime);
-        _renderer.color = Color.white;
-        _movement.enabled = true;
+        _playerAnim.SetBool("Stun", false);
+        _trashBagRenderer.enabled = false;
+        _movement.InputActions.Enable();
         StartCoroutine(StunCooldown());
     }
 
@@ -99,6 +122,7 @@ public class BoatCollision : MonoBehaviour
 
     private void DisableShield()
     {
+        _brokenShieldSFX.Play();
         _shieldRenderer.enabled = false;
         _hasShield = false;
     }

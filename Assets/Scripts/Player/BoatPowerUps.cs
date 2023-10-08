@@ -6,9 +6,8 @@ public class BoatPowerUps : MonoBehaviour
 {
     [Header("Power Up Params")]
 
-    [Tooltip("The speed at which the trash flies towards the magnet")]
-    [SerializeField]
-    private float _magnetSpeed;
+    [Space]
+    [Header("Magnet Params")]
 
     [Range(2f, 10f)]
     [SerializeField]
@@ -18,40 +17,76 @@ public class BoatPowerUps : MonoBehaviour
     private float _magnetDuration;
 
     public bool hasMagnet;
+
+    [Space]
+    [Header("Speed Params")]
+    [SerializeField]
+    private float _superSpeedAcceleration;
+    [SerializeField]
+    private float _superSpeedTorque;
+    [SerializeField]
+    private float _superSpeedDuration;
+
     [Space]
     [Header("Set up")]
     [SerializeField]
     private LayerMask _trashLayer;
+    private BoatMovement _boatMovement;
 
     [SerializeField]
     private SpriteRenderer _magnetRenderer;
+
+    private float _baseSpeed;
+    private float _baseTorque;
+    private Coroutine _magnetCoroutine;
+    private Coroutine _superSpeedCoroutine;
+
+    private void Awake()
+    {
+        _boatMovement = GetComponent<BoatMovement>();
+    }
     void Update()
     {
         if (hasMagnet)
         {
             var colliders = Physics2D.OverlapCircleAll(transform.position, _magnetRadius, _trashLayer);
-            float step = _magnetSpeed * Time.deltaTime;
 
             foreach (var trash in colliders)
             {
-                trash.transform.position = Vector2.MoveTowards(trash.transform.position, transform.position, step);
+                trash.GetComponent<Trash>().Target = transform;
             }
         }
     }
 
     public void EnableMagnet()
     {
-        StopAllCoroutines();
+        if (_magnetCoroutine != null) StopCoroutine(_magnetCoroutine);
         _magnetRenderer.enabled = true;
         hasMagnet = true;
-        StartCoroutine(DisableMagnet());
+        _magnetCoroutine = StartCoroutine(DisableMagnet());
     }
-
     private IEnumerator DisableMagnet()
     {
         yield return new WaitForSeconds(_magnetDuration);
         hasMagnet = false;
         _magnetRenderer.enabled = false;
+    }
+
+    public void EnableSuperSpeed()
+    {
+        if (_superSpeedCoroutine != null) StopCoroutine(_superSpeedCoroutine);
+        _baseSpeed = _boatMovement.Acceleration;
+        _baseTorque = _boatMovement.Torque;
+        _boatMovement.Acceleration = _superSpeedAcceleration;
+        _boatMovement.Torque = _superSpeedTorque;
+        _superSpeedCoroutine = StartCoroutine(DisableSuperSpeed());
+    }
+
+    private IEnumerator DisableSuperSpeed()
+    {
+        yield return new WaitForSeconds(_superSpeedDuration);
+        _boatMovement.Acceleration = _baseSpeed;
+        _boatMovement.Torque = _baseTorque;
     }
 
     private void OnDrawGizmos()

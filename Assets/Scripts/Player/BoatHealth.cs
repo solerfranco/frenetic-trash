@@ -13,8 +13,8 @@ public class BoatHealth : MonoBehaviour
     [SerializeField]
     private AudioSource _deathSFX;
     
-    private BoatCollision boatCollision;
-    private BoatMovement boatMovement;
+    private BoatCollision _boatCollision;
+    private BoatMovement _boatMovement;
 
     private float _currentHealth;
     public float CurrentHealth
@@ -35,16 +35,16 @@ public class BoatHealth : MonoBehaviour
     private void Awake()
     {
         CurrentHealth = _maxHealth;
-        boatCollision = GetComponent<BoatCollision>();
-        boatMovement = GetComponent<BoatMovement>();
+        _boatCollision = GetComponent<BoatCollision>();
+        _boatMovement = GetComponent<BoatMovement>();
     }
 
     private void Update()
     {
         if (CurrentHealth <= 0)
         {
-            boatCollision.enabled = false;
-            boatMovement.enabled = false;
+            _boatCollision.enabled = false;
+            _boatMovement.enabled = false;
             enabled = false;
             Destroy(gameObject, 1);
             _deathSFX.Play();

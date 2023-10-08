@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class TrashSpawner : MonoBehaviour
 {
+    [SerializeField]
+    private int _maxSpawnAmount;
+    private int _spawnCount;
     private Camera _camera;
     [SerializeField]
     private GameObject _trashPrefab;
+    [SerializeField]
+    private GameObject[] _powerUpPrefabs;
 
     [SerializeField]
     private float delayBetweenSpawns;
@@ -20,9 +25,20 @@ public class TrashSpawner : MonoBehaviour
 
     private IEnumerator Start()
     {
+
         while (true)
         {
-            Instantiate(_trashPrefab, GetRandomPositionConfined(), Quaternion.identity);
+            _spawnCount++;
+            if (_spawnCount % 10 == 0)
+            {
+                Instantiate(_powerUpPrefabs[Random.Range(0, _powerUpPrefabs.Length - 1)], GetRandomPositionConfined(), Quaternion.identity);
+            }
+            else
+            {
+                if(FindObjectsOfType<Trash>().Length < _maxSpawnAmount)
+                Instantiate(_trashPrefab, GetRandomPositionConfined(), Quaternion.identity);
+            }
+
             yield return new WaitForSeconds(delayBetweenSpawns);
         }
     }

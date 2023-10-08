@@ -5,42 +5,53 @@ using UnityEngine;
 public class BoatMovement : MonoBehaviour
 {
     [Header("Movement Params")]
-    [SerializeField]
-    private float _acceleration;
-    [SerializeField]
-    private float _rotationSpeed;
+    public float Acceleration;
+    public float Torque;
 
     [Space]
     [Header("Set Up")]
-    [SerializeField]
-    private Rigidbody2D _rb;
+    public Rigidbody2D Rb;
     private Vector2 _movementInput;
 
+    [SerializeField]
+    private SpriteRenderer _playerRenderer;
+
+    [SerializeField]
+    private Animator _playerAnim;
+
     [HideInInspector]
-    public PlayerInputActions _inputActions;
+    public PlayerInputActions InputActions;
     private void Awake()
     {
-        _inputActions = new PlayerInputActions();
+        InputActions = new PlayerInputActions();
     }
 
     private void FixedUpdate()
     {
-        _movementInput = _inputActions.Player.Movement.ReadValue<Vector2>();
-        _rb.AddForce(transform.up * _acceleration * _movementInput.y * Time.fixedDeltaTime, ForceMode2D.Force);
-        _rb.AddTorque(-_movementInput.x * _rotationSpeed * Time.fixedDeltaTime);
+        _movementInput = InputActions.Player.Movement.ReadValue<Vector2>();
+        Rb.AddForce(transform.up * Acceleration * _movementInput.y * Time.fixedDeltaTime, ForceMode2D.Force);
+        Rb.AddTorque(-_movementInput.x * Torque * Time.fixedDeltaTime);
+        _playerAnim.SetFloat("Velocity", Rb.velocity.sqrMagnitude);
+        _playerAnim.SetFloat("Horizontal", transform.up.x);
+        _playerAnim.SetFloat("Vertical", transform.up.y);
 
-        Vector3 velocity = _rb.velocity;
-        _rb.velocity = Vector3.zero;
-        _rb.velocity = transform.up * velocity.magnitude;
+        //Vector3 velocity = Rb.velocity;
+        //Rb.velocity = Vector3.zero;
+        //Rb.velocity = transform.up * velocity.magnitude;
+    }
+
+    private void Update()
+    {
+        _playerRenderer.transform.position = transform.position;
     }
 
     private void OnEnable()
     {
-        _inputActions.Player.Enable();
+        InputActions.Player.Enable();
     }
 
     private void OnDisable()
     {
-        _inputActions.Player.Disable();
+        InputActions.Player.Disable();
     }
 }
