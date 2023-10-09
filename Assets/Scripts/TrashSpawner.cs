@@ -5,13 +5,18 @@ using UnityEngine;
 public class TrashSpawner : MonoBehaviour
 {
     [SerializeField]
+    private int _powerUpSpawnRate;
+    [SerializeField]
     private int _maxSpawnAmount;
     private int _spawnCount;
     private Camera _camera;
     [SerializeField]
-    private GameObject _trashPrefab;
+    private Trash _trashPrefab;
     [SerializeField]
     private GameObject[] _powerUpPrefabs;
+
+    [SerializeField]
+    private float _raycastRadius;
 
     [SerializeField]
     private float delayBetweenSpawns;
@@ -29,14 +34,20 @@ public class TrashSpawner : MonoBehaviour
         while (true)
         {
             _spawnCount++;
-            if (_spawnCount % 10 == 0)
+            if (_spawnCount % _powerUpSpawnRate == 0)
             {
-                Instantiate(_powerUpPrefabs[Random.Range(0, _powerUpPrefabs.Length - 1)], GetRandomPositionConfined(), Quaternion.identity);
+                Instantiate(_powerUpPrefabs[Random.Range(0, _powerUpPrefabs.Length)], GetRandomPositionConfined(), Quaternion.identity);
             }
-            else
+            if(FindObjectsOfType<Trash>().Length < _maxSpawnAmount)
             {
-                if(FindObjectsOfType<Trash>().Length < _maxSpawnAmount)
-                Instantiate(_trashPrefab, GetRandomPositionConfined(), Quaternion.identity);
+                int failSafeCounter = 0;
+                Trash trash = Instantiate(_trashPrefab, GetRandomPositionConfined(), Quaternion.identity);
+                trash._raycastRadius = _raycastRadius;
+                while (trash.CheckForColliders() && failSafeCounter < 15)
+                {
+                    trash.transform.position = GetRandomPositionConfined();
+                    failSafeCounter++;
+                }
             }
 
             yield return new WaitForSeconds(delayBetweenSpawns);
@@ -57,10 +68,13 @@ public class TrashSpawner : MonoBehaviour
     }
     private bool IsPointInsideCamara(Vector2 pos)
     {
-        Vector3 bottomLeft = _camera.ScreenToWorldPoint(new Vector3(0, 0, _camera.nearClipPlane));
-        Vector3 topRight = _camera.ScreenToWorldPoint(new Vector3(_camera.pixelWidth, _camera.pixelHeight, _camera.nearClipPlane));
-
         Vector2 viewportPos = _camera.WorldToViewportPoint(pos);
         return viewportPos.x >= 0 && viewportPos.y >= 0 && viewportPos.x <= 1 && viewportPos.y <= 1;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, _raycastRadius);
     }
 }

@@ -32,6 +32,8 @@ public class BoatPowerUps : MonoBehaviour
     [SerializeField]
     private LayerMask _trashLayer;
     private BoatMovement _boatMovement;
+    [SerializeField]
+    private Animator _playerAnim;
 
     [SerializeField]
     private SpriteRenderer _magnetRenderer;
@@ -75,6 +77,7 @@ public class BoatPowerUps : MonoBehaviour
     public void EnableSuperSpeed()
     {
         if (_superSpeedCoroutine != null) StopCoroutine(_superSpeedCoroutine);
+        _playerAnim.SetBool("Dash", true);
         _baseSpeed = _boatMovement.Acceleration;
         _baseTorque = _boatMovement.Torque;
         _boatMovement.Acceleration = _superSpeedAcceleration;
@@ -85,6 +88,7 @@ public class BoatPowerUps : MonoBehaviour
     private IEnumerator DisableSuperSpeed()
     {
         yield return new WaitForSeconds(_superSpeedDuration);
+        _playerAnim.SetBool("Dash", false);
         _boatMovement.Acceleration = _baseSpeed;
         _boatMovement.Torque = _baseTorque;
     }

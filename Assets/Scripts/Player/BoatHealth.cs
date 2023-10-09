@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class BoatHealth : MonoBehaviour
 {
@@ -15,6 +16,17 @@ public class BoatHealth : MonoBehaviour
     
     private BoatCollision _boatCollision;
     private BoatMovement _boatMovement;
+
+    private bool _flashing;
+
+    [SerializeField]
+    private Color _initialColor, _dangerColor;
+
+    [SerializeField]
+    private GameObject _gameOverScreen;
+
+    [SerializeField]
+    private GameObject _counter;
 
     private float _currentHealth;
     public float CurrentHealth
@@ -45,14 +57,34 @@ public class BoatHealth : MonoBehaviour
         {
             _boatCollision.enabled = false;
             _boatMovement.enabled = false;
+            _gameOverScreen.SetActive(true);
+            StartCoroutine(LoadMainMenu());
+            _counter.SetActive(false);
             enabled = false;
-            Destroy(gameObject, 1);
             _deathSFX.Play();
         }
         else
         {
             CurrentHealth -= Time.deltaTime;
             _healthBar.fillAmount = CurrentHealth / _maxHealth;
+            if (!_flashing && CurrentHealth <= _maxHealth / 2) StartCoroutine(FlashColor());
         }
+    }
+
+    private IEnumerator FlashColor()
+    {
+        _flashing = true;
+        _healthBar.color = _initialColor;
+        yield return new WaitForSeconds(0.25f);
+        _healthBar.color = _dangerColor;
+        yield return new WaitForSeconds(0.25f);
+        _healthBar.color = _initialColor;
+        _flashing = false;
+    }
+
+    private IEnumerator LoadMainMenu()
+    {
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene(0);
     }
 }

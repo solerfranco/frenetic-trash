@@ -14,7 +14,8 @@ public class BoatCollision : MonoBehaviour
     [Tooltip("How fast will the boat go when bumping an obstacle")]
     [SerializeField]
     private float _bumpSpeed;
-
+    [SerializeField]
+    private float _bumpTime;
     //Stun time indica cuanto tiempo estas stuneado
     //Stun cooldown indica el tiempo de invulneravilidad al stun
     [SerializeField]
@@ -43,8 +44,6 @@ public class BoatCollision : MonoBehaviour
     private BoatPowerUps _powerUps;
     private BoatMovement _movement;
     private int _trashCount;
-    [SerializeField]
-    private TextMeshProUGUI _trashCounterTMP;
 
     private void Awake()
     {
@@ -60,7 +59,6 @@ public class BoatCollision : MonoBehaviour
             _pickUpSFX.Play();
             _health.CurrentHealth += Mathf.Clamp(_pickUpAmount, 0, _health._maxHealth);
             _trashCount++;
-            _trashCounterTMP.text = _trashCount.ToString();
             PlayerPrefs.SetInt("TrashCount", _trashCount);
             Destroy(collision.gameObject);
         }
@@ -99,7 +97,7 @@ public class BoatCollision : MonoBehaviour
         _movement.Rb.velocity = -_movement.Rb.velocity.normalized * _bumpSpeed;
         if (_hasShield)
         {
-            DisableShield();
+            StartCoroutine(DisableShield());
             yield break;
         }
         if (!_canBeStunned) yield break;
@@ -120,11 +118,14 @@ public class BoatCollision : MonoBehaviour
         _shieldRenderer.enabled = true;
     }
 
-    private void DisableShield()
+    private IEnumerator DisableShield()
     {
         _brokenShieldSFX.Play();
         _shieldRenderer.enabled = false;
         _hasShield = false;
+        _movement.InputActions.Disable();
+        yield return new WaitForSeconds(_bumpTime);
+        _movement.InputActions.Enable();
     }
 
     private IEnumerator StunCooldown()

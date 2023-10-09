@@ -9,6 +9,21 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
+    path: Assets/Scenes/CinematicaNormal.unity
+    guid: a2f44fa54c4f43a458f942fbb5189b01
+  - enabled: 1
+    path: Assets/Scenes/TutorialNormal.unity
+    guid: 0ccaf5bbf9f48c94ba77b282a75517f7
+  - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 4c6643b3105a0d045abaad0a4f5e6746
+  - enabled: 1
+    path: Assets/Scenes/CinematicaSurvival.unity
+    guid: 7198073e694447a49b4206cc9fd87099
+  - enabled: 1
+    path: Assets/Scenes/TutorialSurvival.unity
+    guid: fdde80b4249541e4bbd7c4b5954b7d1f
+  - enabled: 1
+    path: Assets/Scenes/GameSurvival.unity
+    guid: 745b93ae0b2d6be4f94fa93869d690fc
   m_configObjects: {}
